@@ -2,6 +2,8 @@
 // Copyright (c) Fubar Development Junker. All rights reserved.
 // </copyright>
 
+using BCrypt.Net;
+
 using System;
 using System.IO;
 
@@ -16,6 +18,10 @@ using Serilog;
 using Serilog.Events;
 
 using TestFtpServer.Configuration;
+using FubarDev.FtpServer.Localization;
+using FubarDev.FtpServer;
+using TestFtpServer.Commands;
+using FubarDev.FtpServer.CommandHandlers;
 
 namespace TestFtpServer
 {
@@ -32,7 +38,9 @@ namespace TestFtpServer
 
             try
             {
-                CreateHostBuilder(args).Build().Run();
+                var host = CreateHostBuilder(args);
+                
+                host.Build().Run();
                 return 0;
             }
             catch (Exception ex)
@@ -46,13 +54,14 @@ namespace TestFtpServer
             }
         }
 
-        private static IHostBuilder CreateHostBuilder(string[] args)
+        private static HostBuilder CreateHostBuilder(string[] args)
         {
             var configPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "SharpFtpServer");
 
-            return new HostBuilder()
+            var hostBuilder = new HostBuilder();
+            hostBuilder
                .UseConsoleLifetime()
                .ConfigureHostConfiguration(
                     configHost => { configHost.AddEnvironmentVariables("FTPSERVER_"); })
@@ -75,27 +84,35 @@ namespace TestFtpServer
                     })
                .ConfigureLogging(
                     (hostContext, loggingBuilder) => { loggingBuilder.ClearProviders(); })
-               .ConfigureServices(
-                    (hostContext, services) =>
-                    {
-                        var options = hostContext.Configuration.Get<FtpOptions>();
-                        options.Validate();
+                .ConfigureServices((hostContext, services) =>
+                {
+                    // Load FTP options from configuration
+                    var options = hostContext.Configuration.Get<FtpOptions>();
+                    options.Validate();
 
-                        services
-                           .AddOptions()
-                           .AddFtpServices(options)
-                           .AddHostedService<HostedFtpService>()
-                           .AddHostedService<HostedIpcService>()
-                           .AddIpc(
-                                builder =>
-                                {
-                                    builder
-                                       .AddNamedPipe(opt => opt.ThreadCount = 1)
-                                       .AddService<Api.IFtpServerHost, FtpServerHostApi>();
-                                });
-                    })
+                    // custom server banner
+                    services.AddSingleton<IFtpServerMessages, CustomFtpServerMessages>();
+                    // custom auth that logs failed logins. important to show examples like this.
+                    services.AddSingleton<CustomMembershipProvider>();
+                    // geoblock
+                    services.AddSingleton<IFtpMiddleware, GeoblockMiddleware>();
+
+                    // Now register FTP services and other services
+                    services
+                        .AddFtpServices(options)  // Configure other FTP services
+                        .AddHostedService<HostedFtpService>()
+                        .AddHostedService<HostedIpcService>()
+                        .AddIpc(builder =>
+                        {
+                            builder
+                                .AddNamedPipe(opt => opt.ThreadCount = 1)
+                                .AddService<Api.IFtpServerHost, FtpServerHostApi>();
+                        });
+                })
                .UseSerilog(
                     (context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); });
+
+            return hostBuilder;
         }
     }
 }

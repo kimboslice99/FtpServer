@@ -51,6 +51,13 @@ namespace TestFtpServer
                         }
                     }
                 },
+                "custom settings",
+                { "connectionString", "set db string", v => values["custom:connectionString"] = v },
+                { "banner", "set banner", v => values["custom:banner"] = v },
+                "geoip settings",
+                { "dbPath", "set the path to geoip db", v => values["geoip:dbPath"] = v },
+                { "countryCodes", "country codes", v => values["geoip:countryCodes"] = v },
+                { "allowMode", "allow only listed codes or deny only listed codes", v => values["geoip:allowMode"] = v },
                 "PAM authentication workarounds",
                 { "no-pam-account-management", "Disable the PAM account management", v => values["pam:noAccountManagement"] = v != null ? "true" : "false" },
                 "Directory layout (system-io, unix))",

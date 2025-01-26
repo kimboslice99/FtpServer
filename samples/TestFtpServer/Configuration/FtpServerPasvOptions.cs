@@ -18,5 +18,7 @@ namespace TestFtpServer.Configuration
         /// Gets or sets a value indicating whether promiscuous PASV is allowed.
         /// </summary>
         public bool Promiscuous { get; set; }
+
+        public string? Name { get; set; }
     }
 }

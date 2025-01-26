@@ -85,6 +85,8 @@ namespace FubarDev.FtpServer.Authentication
             {
 #if NET461 || NETSTANDARD2_0
                 s.Close();
+#elif NETSTANDARD2_1
+                s.ShutdownAsync().Wait();
 #else
                 s.Dispose();
 #endif

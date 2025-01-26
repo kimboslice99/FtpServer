@@ -103,11 +103,9 @@ namespace FubarDev.FtpServer.Authorization
             _needsPassword = true;
 
             var authInfoFeature = Connection.Features.Get<IAuthorizationInformationFeature>();
-#pragma warning disable 618
-#pragma warning disable 612
+#pragma warning disable 618, 612
             authInfoFeature.User = new UnauthenticatedUser(userIdentifier);
-#pragma warning restore 612
-#pragma warning restore 618
+#pragma warning restore 618, 612
             authInfoFeature.FtpUser = new ClaimsPrincipal(
                 new ClaimsIdentity(
                     new[]

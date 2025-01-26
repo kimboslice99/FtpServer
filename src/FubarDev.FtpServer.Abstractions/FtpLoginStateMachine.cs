@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using FubarDev.FtpServer.Authentication;
 using FubarDev.FtpServer.Authorization;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 namespace FubarDev.FtpServer
 {
     /// <summary>
@@ -116,7 +119,7 @@ namespace FubarDev.FtpServer
                        .ConfigureAwait(false);
                 case "PASS":
                     return await HandlePassAsync(ftpCommand.Argument, cancellationToken)
-                       .ConfigureAwait(false);
+                        .ConfigureAwait(false);
                 case "ACCT":
                     return await HandleAcctAsync(ftpCommand.Argument, cancellationToken)
                        .ConfigureAwait(false);

@@ -34,19 +34,19 @@ namespace FubarDev.FtpServer.Localization
         private IFtpConnection Connection => _connectionAccessor.FtpConnection ?? throw new InvalidOperationException("FTP server message called without active connection.");
 
         /// <inheritdoc />
-        public IEnumerable<string> GetBannerMessage()
+        public virtual IEnumerable<string> GetBannerMessage()
         {
             return new[] { T("FTP Server Ready") };
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> GetDirectoryChangedMessage(Stack<IUnixDirectoryEntry> path)
+        public virtual IEnumerable<string> GetDirectoryChangedMessage(Stack<IUnixDirectoryEntry> path)
         {
             return new[] { T("Successful ({0})", path.GetFullPath()) };
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> GetPasswordAuthorizationSuccessfulMessage(IAccountInformation accountInformation)
+        public virtual IEnumerable<string> GetPasswordAuthorizationSuccessfulMessage(IAccountInformation accountInformation)
         {
             return new[] { T("Password ok, FTP server ready") };
         }

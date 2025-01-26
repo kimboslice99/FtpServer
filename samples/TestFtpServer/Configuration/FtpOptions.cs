@@ -49,6 +49,16 @@ namespace TestFtpServer.Configuration
         public FtpsOptions Ftps { get; set; } = new FtpsOptions();
 
         /// <summary>
+        /// Sets custom options.
+        /// </summary>
+        public CustomMembershipOptions Custom { get; set; } = new CustomMembershipOptions();
+
+        /// <summary>
+        /// Sets GeoIP Options.
+        /// </summary>
+        public GeoIP GeoIP { get; set; } = new GeoIP();
+
+        /// <summary>
         /// Gets or sets the file system backend to use.
         /// </summary>
         public string Backend
