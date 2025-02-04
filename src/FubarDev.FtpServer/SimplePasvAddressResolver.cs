@@ -47,8 +47,9 @@ namespace FubarDev.FtpServer
                 minPort = 1024;
             }
             var remoteIPAddress = connection.RemoteEndPoint.Address;
+
             // only if not local, look up our public facing ip, this should handle most scenarios
-            if(IsLocal(remoteIPAddress) is false)
+            if (IsLocal(remoteIPAddress) is false)
             {
                 var publicIp = await GetPublicIp(connection.RemoteEndPoint.AddressFamily);
                 _options.PublicAddress = IPAddress.Parse(publicIp);
@@ -66,7 +67,7 @@ namespace FubarDev.FtpServer
             return response;
         }
 
-        internal async Task<string> GetPublicIp(System.Net.Sockets.AddressFamily family)
+        internal async Task<string> GetPublicIp(AddressFamily family)
         {
             var ip = string.Empty;
             switch (family)
@@ -75,7 +76,7 @@ namespace FubarDev.FtpServer
                     foreach (var host in _ipv4Hosts)
                     {
                         HttpResponseMessage response = await GetASync(host);
-                        if(response != null && response.IsSuccessStatusCode)
+                        if (response != null && response.IsSuccessStatusCode)
                         {
                             ip = await response.Content.ReadAsStringAsync();
                             break;
