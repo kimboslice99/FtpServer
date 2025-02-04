@@ -50,15 +50,7 @@ namespace FubarDev.FtpServer
             // only if not local, look up our public facing ip, this should handle most scenarios
             if(IsLocal(remoteIPAddress) is false)
             {
-                var publicIp = string.Empty;
-                if (connection.RemoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    publicIp = await GetPublicIp(connection.RemoteEndPoint.AddressFamily);
-                }
-                else if (connection.RemoteEndPoint.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    publicIp = await GetPublicIp(connection.RemoteEndPoint.AddressFamily);
-                }
+                var publicIp = await GetPublicIp(connection.RemoteEndPoint.AddressFamily);
                 _options.PublicAddress = IPAddress.Parse(publicIp);
             }
             var maxPort = Math.Max(_options.PasvMaxPort ?? 0, minPort);
