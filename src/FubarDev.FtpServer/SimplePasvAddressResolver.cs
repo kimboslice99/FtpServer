@@ -22,6 +22,8 @@ namespace FubarDev.FtpServer
     /// </remarks>
     public class SimplePasvAddressResolver : IPasvAddressResolver
     {
+        private static readonly string[] _ipv4Hosts = { "https://api.ipify.org", "https://ipv4.icanhazip.com" };
+        private static readonly string[] _ipv6Hosts = { "https://api6.ipify.org", "https://ipv6.icanhazip.com" };
         private readonly SimplePasvOptions _options;
 
         /// <summary>
@@ -51,11 +53,11 @@ namespace FubarDev.FtpServer
                 var publicIp = string.Empty;
                 if (connection.RemoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    publicIp = await GetASync("https://api.ipify.org");
+                    publicIp = await GetPublicIp(connection.RemoteEndPoint.AddressFamily);
                 }
                 else if (connection.RemoteEndPoint.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    publicIp = await GetASync("https://api6.ipify.org");
+                    publicIp = await GetPublicIp(connection.RemoteEndPoint.AddressFamily);
                 }
                 _options.PublicAddress = IPAddress.Parse(publicIp);
             }
@@ -65,13 +67,44 @@ namespace FubarDev.FtpServer
             return new PasvListenerOptions(minPort, maxPort, publicAddress);
         }
 
-        internal async Task<string> GetASync(string uri)
+        internal async Task<HttpResponseMessage> GetASync(string uri)
         {
             using var client = new HttpClient();
             using HttpResponseMessage response = await client.GetAsync(uri);
-            response.EnsureSuccessStatusCode(); // Throws an exception if the status code is not 2xx
-            var str = await response.Content.ReadAsStringAsync();
-            return str;
+            return response;
+        }
+
+        internal async Task<string> GetPublicIp(System.Net.Sockets.AddressFamily family)
+        {
+            var ip = string.Empty;
+            switch (family)
+            {
+                case AddressFamily.InterNetwork:
+                    foreach (var host in _ipv4Hosts)
+                    {
+                        HttpResponseMessage response = await GetASync(host);
+                        if(response != null && response.IsSuccessStatusCode)
+                        {
+                            ip = await response.Content.ReadAsStringAsync();
+                            break;
+                        }
+                    }
+                    break;
+                case AddressFamily.InterNetworkV6:
+                    foreach (var host in _ipv6Hosts)
+                    {
+                        HttpResponseMessage response = await GetASync(host);
+                        if (response != null && response.IsSuccessStatusCode)
+                        {
+                            ip = await response.Content.ReadAsStringAsync();
+                            break;
+                        }
+                    }
+                    break;
+                default:
+                    throw new Exception("Invalid address family provided.");
+            }
+            return ip;
         }
 
         internal bool IsLocal(IPAddress remoteAddress)
